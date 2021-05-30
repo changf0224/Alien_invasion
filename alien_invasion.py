@@ -87,6 +87,9 @@ class AlienInvasion:
             # 重置游戏统计信息
             self.stats.reset_stats()
             self.stats.game_active = True
+            self.sb.prep_score()
+            self.sb.prep_ships()
+            self.sb.prep_level()
 
             # 清空残留外星人和子弹
             self.aliens.empty()
@@ -118,6 +121,7 @@ class AlienInvasion:
         if self.stats.ships_left > 0:
             # 将ships_left减1.
             self.stats.ships_left -= 1
+            self.sb.prep_ships()
 
             # 清空余下的外星人和子弹。
             self.bullets.empty()
@@ -164,14 +168,20 @@ class AlienInvasion:
         # 删除发生碰撞的子弹和外星人。
         collistons = pygame.sprite.groupcollide(self.bullets, self.aliens, True, True)
         if collistons:
-            self.stats.score += self.settings.alien_points
+            for aliens in collistons.values():
+                self.stats.score += self.settings.alien_points * len(aliens)
             self.sb.prep_score()
+            self.sb.check_high_score()
         if not self.aliens:
             # 删除现有的所有子弹，并创建一群新的外星人。
             self.bullets.empty()
             self._create_fleet()
             # 加快子弹、外星人、飞船的速度
             self.settings.increase_speed()
+
+            # 提高等级
+            self.stats.level += 1
+            self.sb.prep_level()
 
     def _update_aliens(self):
         """更新外星人群中所有外星人的位置"""
