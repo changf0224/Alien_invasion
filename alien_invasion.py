@@ -8,9 +8,9 @@ from alien import Alien
 from bullet import Bullet
 from button import Button
 from game_stats import GameStats
+from scoreboard import Scoreboaed
 from settings import Settings
 from ship import Ship
-from scoreboard import Scoreboaed
 
 
 class AlienInvasion:
@@ -22,7 +22,7 @@ class AlienInvasion:
         self.settings = Settings()
         # 窗口模式
         self.screen = pygame.display.set_mode((self.settings.screen_width, self.settings.screen_height))
-        # 全屏模式
+        # # 全屏模式
         # self.screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
         # self.settings.screen_width = self.screen.get_rect().width
         # self.settings.screen_height = self.screen.get_rect().height
@@ -47,8 +47,6 @@ class AlienInvasion:
 
         # 创建play按钮
         self.play_button = Button(self, "Play")
-
-
 
     def run_game(self):
         """开始游戏的主循环"""
@@ -102,8 +100,6 @@ class AlienInvasion:
             # 隐藏鼠标光标
             pygame.mouse.set_visible(False)
 
-
-
     def _check_keydown_event(self, event):
         """响应按下按键"""
         if event.key == pygame.K_RIGHT:
@@ -111,9 +107,12 @@ class AlienInvasion:
         elif event.key == pygame.K_LEFT:
             self.ship.moving_left = True
         elif event.key == pygame.K_q:
+            print("您按下了Q，退出游戏")
             sys.exit()
         elif event.key == pygame.K_SPACE:
             self._fire_bullet()
+        elif event.key == pygame.K_F11:
+            self._change_screen_size()
 
     def _ship_hit(self):
         """响应飞船被外星人撞到。"""
@@ -248,6 +247,40 @@ class AlienInvasion:
                 # 像飞船被撞到一样处理。
                 self._ship_hit()
                 break
+
+    def _change_screen_size(self):
+        """改变未开始游戏时屏幕大小"""
+        if not self.stats.game_active:
+                self.settings = Settings()
+                if self.screen.get_width() == 1200:
+                    # 全屏模式
+                    self.screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
+                    self.settings.screen_width = self.screen.get_rect().width
+                    self.settings.screen_height = self.screen.get_rect().height
+                else:
+                    # 窗口模式
+                    self.screen = pygame.display.set_mode((self.settings.screen_width, self.settings.screen_height))
+                pygame.display.set_caption("Alien Invasion")
+
+                # 创建一个用于存储游戏统计信息的实例。
+                self.stats = GameStats(self)
+
+                # 创建记分牌
+                self.sb = Scoreboaed(self)
+
+                # 初始化飞船
+                self.ship = Ship(self)
+
+                # 初始化子弹组
+                self.bullets = pygame.sprite.Group()
+
+                # 初始化外星人组
+                self.aliens = pygame.sprite.Group()
+
+                self._create_fleet()
+
+                # 创建play按钮
+                self.play_button = Button(self, "Play")
 
     def _update_screen(self):
         """更新屏幕上的图像，并切换到新屏幕"""
